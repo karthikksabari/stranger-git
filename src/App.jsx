@@ -3,7 +3,7 @@ import GithubContext from './context/GithubContext';
 import './App.css';
 
 // IMAGES
-import graveyardImage from './assets/graveyard.jpg';
+import graveyardImage from './assets/graveyard.jpg'; 
 import upsidedownImage from './assets/upsidedown.jpg'; 
 import maxImage from './assets/maxanitrans.png';
 import textImage from './assets/text.png';
@@ -30,13 +30,24 @@ export default function App() {
   const [isFlipped, setIsFlipped] = useState(false);
   
   const [filterQuery, setFilterQuery] = useState(""); 
-  const debouncedFilter = useDebounce(filterQuery, 300);
+  const debouncedFilter = useDebounce(filterQuery, 500); 
+  
   const [sortBy, setSortBy] = useState('stars'); 
   const [showStats, setShowStats] = useState(false);
   const [showToken, setShowToken] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
 
   const sensorRef = useRef(null);
+
+  // --- PRELOAD IMAGES ---
+  useEffect(() => {
+    const img1 = new Image();
+    img1.src = graveyardImage;
+    const img2 = new Image();
+    img2.src = upsidedownImage;
+    const img3 = new Image();
+    img3.src = demogorgonImage;
+  }, []);
 
   const langColors = {
     JavaScript: '#f1e05a', TypeScript: '#2b7489', Python: '#3572A5',
@@ -158,8 +169,6 @@ export default function App() {
   }, [page]);
 
   const orgLogo = repos.length > 0 ? repos[0].owner.avatar_url : null;
-  const displayTitle = errorType ? "THE ABYSS" : cleanInput(query).toUpperCase();
-
   const saveToken = () => {
     if(tokenInput) localStorage.setItem('stranger_git_token', tokenInput);
     setShowToken(false);
@@ -176,8 +185,6 @@ export default function App() {
       ></div>
 
       {isUpsideDown && !errorType && <div className="lightning-overlay"></div>}
-
-      {/* FOG LAYER */}
       {isUpsideDown && <div className="fog-layer"></div>}
 
       <div className={`rotator-wrapper ${isFlipped ? 'flipped-state' : ''}`}>
@@ -213,58 +220,76 @@ export default function App() {
         {isUpsideDown && (
           <div className="results-container flipped-content-fix">
              
-             <div className="upside-down-header">
-               <div className="header-left">
-                  <button className="back-btn" onClick={handleReset}>← BACK</button>
-                  {!errorType && (
-                    <button 
-                      className="stats-btn" 
-                      onClick={() => setShowStats(true)}
-                      style={{ background: pieChartGradient }}
-                      title="View Language Stats"
-                    ></button>
-                  )}
-               </div>
+            {/* --- HEADER --- */}
+            <div className="upside-down-header-new">
+              <button className="back-icon-btn" onClick={handleReset} title="Go Back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff0000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 14L4 9l5-5"/>
+                  <path d="M4 9h10c3 0 7 1.5 7 8"/>
+                </svg>
+              </button>
                
-               <h1 className="org-title">{displayTitle}</h1>
+              <div className="header-center-group">
+                {orgLogo && !errorType && <img src={orgLogo} alt="Logo" className="header-circular-logo" />}
+                
+                {!errorType && (
+                  <div className="header-search-wrapper">
+                    <svg className="search-icon-small" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input 
+                      className="header-search-input"
+                      placeholder="Search Projects..." 
+                      value={filterQuery}
+                      onChange={(e) => setFilterQuery(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
 
-               <div className="header-right">
-                  {!errorType ? (
-                    <>
-                      {/* FIX: ICON IS NOW AFTER THE TEXT */}
-                      <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                        <option value="stars">STARS ⭐</option>
-                        <option value="forks">FORKS 🍴</option>
-                        <option value="updated">DATE 📅</option>
+              <div className="header-right-tools-container">
+                 {!errorType && (
+                   <button 
+                     className="stats-icon-btn" 
+                     onClick={() => setShowStats(true)}
+                     style={{ background: pieChartGradient }}
+                     title="View Language Stats"
+                   ></button>
+                 )}
+                  {!errorType && (
+                   <div className="sort-wrapper">
+                      <select className="sort-select-rounded" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                        <option value="stars">Stars ⭐</option>
+                        <option value="forks">Forks 🍴</option>
+                        <option value="updated">Date 📅</option>
                       </select>
-                      <input 
-                        className="filter-input" 
-                        placeholder="Filter..." 
-                        value={filterQuery}
-                        onChange={(e) => setFilterQuery(e.target.value)}
-                      />
-                      {orgLogo && <img src={orgLogo} alt="Logo" className="org-logo" />}
-                    </>
-                  ) : (
-                    <img src={demogorgonImage} alt="Demogorgon" className="org-logo" />
-                  )}
-               </div>
-             </div>
-             
+                   </div>
+                 )}
+              </div>
+            </div>
+
+             {/* --- ERROR CONTAINER (THE ABYSS) --- */}
              {errorType && (
                <div className="error-container">
-                 <h2 className="error-title">
-                   {errorType === '404' ? "404 - NOT FOUND" : "403 - GATE CLOSED"}
-                 </h2>
-                 <p className="error-msg">
-                   {errorType === '404' 
-                     ? `The Demogorgon has swallowed "${cleanInput(query)}".` 
-                     : "The Mind Flayer blocks your path. (Rate Limit Exceeded)."}
-                 </p>
-                 <button className="escape-btn" onClick={handleReset}>ESCAPE THE ABYSS</button>
+                 {/* DEMOGORGON IMAGE BEHIND TEXT */}
+                 <img src={demogorgonImage} className="demogorgon-error" alt="The Demogorgon" />
+                 
+                 <div className="error-content-wrapper">
+                    <h2 className="error-title">
+                    {errorType === '404' ? "404 - NOT FOUND" : "403 - GATE CLOSED"}
+                    </h2>
+                    <p className="error-msg">
+                    {errorType === '404' 
+                        ? `The Demogorgon has swallowed "${cleanInput(query)}". It does not exist in this reality.` 
+                        : "The Mind Flayer blocks your path. (Rate Limit Exceeded)."}
+                    </p>
+                    <button className="escape-btn" onClick={handleReset}>ESCAPE THE ABYSS</button>
+                 </div>
                </div>
              )}
 
+             {/* --- CARDS GRID --- */}
              {!errorType && (
                <>
                  <div className="cards-grid">
@@ -289,6 +314,7 @@ export default function App() {
                        <div className="skeleton-card"></div>
                        <div className="skeleton-card"></div>
                        <div className="skeleton-card"></div>
+                       <div className="skeleton-card"></div>
                      </>
                    )}
                  </div>
@@ -301,7 +327,7 @@ export default function App() {
         )}
       </div> 
 
-      {/* --- MODALS --- */}
+      {/* --- MODALS (Same as before) --- */}
       {showStats && (
         <div className="modal-overlay" onClick={() => setShowStats(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
