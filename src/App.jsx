@@ -9,7 +9,7 @@ import maxImage from './assets/maxanitrans.png';
 import textImage from './assets/text.png';
 import demogorgonImage from './assets/demogorgon.png'; 
 
-// HOOK: DEBOUNCE (UI Helper)
+// HOOK: DEBOUNCE
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -20,13 +20,11 @@ function useDebounce(value, delay) {
 }
 
 export default function App() {
-  // --- CONSUME CONTEXT ---
   const { 
     repos, loading, errorType, hasMore, query, 
     searchGithub, resetContext, setQuery, incrementPage, page
   } = useContext(GithubContext);
 
-  // --- LOCAL VISUAL STATE ---
   const [isFloating, setIsFloating] = useState(false);
   const [isUpsideDown, setIsUpsideDown] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -47,7 +45,6 @@ export default function App() {
     Rust: '#dea584', Shell: '#89e051', Other: '#ff0000'
   };
 
-  // --- CHECK RESTORE ON MOUNT ---
   useEffect(() => {
     if (repos.length > 0 || errorType) {
       setIsFloating(true);
@@ -58,7 +55,6 @@ export default function App() {
     }
   }, [repos.length, errorType]);
 
-  // Save Scroll Position
   useEffect(() => {
     const handleScroll = () => {
       if(isUpsideDown) localStorage.setItem('sg_scroll_y', window.scrollY);
@@ -75,15 +71,10 @@ export default function App() {
     if(!query) return;
     const cleaned = cleanInput(query);
     
-    // ANIMATION
     setIsFloating(true);
-
-    // FLIP
     setTimeout(() => {
       setIsFlipped(true); 
     }, 2000);
-
-    // FETCH
     setTimeout(() => {
       setIsUpsideDown(true);
       searchGithub(cleaned, 1); 
@@ -101,7 +92,6 @@ export default function App() {
     }, 500); 
   };
 
-  // --- SORTING LOGIC ---
   const processedRepos = useMemo(() => {
     let result = [...repos];
     if (debouncedFilter) {
@@ -118,7 +108,6 @@ export default function App() {
     return result;
   }, [repos, debouncedFilter, sortBy]);
 
-  // --- PIE CHART LOGIC ---
   const languageStats = useMemo(() => {
     const stats = {};
     let total = 0;
@@ -151,7 +140,6 @@ export default function App() {
     return gradientString;
   }, [languageStats]);
 
-  // --- OBSERVER ---
   useEffect(() => {
     if (!isUpsideDown || errorType) return;
     const observer = new IntersectionObserver(entries => {
@@ -163,7 +151,6 @@ export default function App() {
     return () => observer.disconnect();
   }, [isUpsideDown, hasMore, loading, errorType]);
 
-  // TRIGGER FETCH ON PAGE CHANGE
   useEffect(() => {
     if (page > 1) {
        searchGithub(cleanInput(query), page);
@@ -189,6 +176,9 @@ export default function App() {
       ></div>
 
       {isUpsideDown && !errorType && <div className="lightning-overlay"></div>}
+
+      {/* FOG LAYER */}
+      {isUpsideDown && <div className="fog-layer"></div>}
 
       <div className={`rotator-wrapper ${isFlipped ? 'flipped-state' : ''}`}>
 
@@ -222,6 +212,7 @@ export default function App() {
         {/* --- UPSIDE DOWN WORLD --- */}
         {isUpsideDown && (
           <div className="results-container flipped-content-fix">
+             
              <div className="upside-down-header">
                <div className="header-left">
                   <button className="back-btn" onClick={handleReset}>← BACK</button>
@@ -240,10 +231,11 @@ export default function App() {
                <div className="header-right">
                   {!errorType ? (
                     <>
+                      {/* FIX: ICON IS NOW AFTER THE TEXT */}
                       <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                        <option value="stars">⭐ STARS</option>
-                        <option value="forks">🍴 FORKS</option>
-                        <option value="updated">📅 DATE</option>
+                        <option value="stars">STARS ⭐</option>
+                        <option value="forks">FORKS 🍴</option>
+                        <option value="updated">DATE 📅</option>
                       </select>
                       <input 
                         className="filter-input" 

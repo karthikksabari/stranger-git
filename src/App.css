@@ -29,6 +29,7 @@ input:-webkit-autofill:active {
   overflow: hidden;
 }
 
+/* LAYER 1 (BOTTOM): BACKGROUND IMAGE */
 .bg-layer {
   position: absolute;
   top: 0;
@@ -36,18 +37,56 @@ input:-webkit-autofill:active {
   width: 100%;
   height: 100%;
   background-size: cover;
-  background-position: center;
+  
+  /* POSITION: Lower number = Moves image DOWN. Higher number = Moves image UP. */
+  background-position: center 48%;
+  
   transition: background-image 0.5s ease-in-out;
   z-index: -1; 
+  
+  /* ZOOM: 1.15 is zoomed out (Standard is 1.0) */
+  transform: scale(1); 
+  transform-origin: center bottom;
+  
+  /* COLOR POP FILTERS */
+  filter: contrast(1.35) saturate(1.8) brightness(0.9);
+}
+/* LAYER 2: LIGHTNING ANIMATION */
+.lightning-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%; 
+  pointer-events: none;
+  z-index: 0; /* Above BG, Below Fog */
+  mix-blend-mode: overlay;
+  background: rgba(255, 0, 0, 0.6); 
+  animation: lightning-complex 7s infinite;
+  opacity: 0; 
+  animation-delay: 1.5s;
 }
 
-/* --- 2. ROTATOR WRAPPER --- */
+/* LAYER 3 (MIDDLE): FIXED FOG LAYER */
+.fog-layer {
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6); 
+  z-index: 10; /* Above Lightning, Below Content */
+  pointer-events: none; 
+}
+
+/* LAYER 4 (TOP): THE CONTENT LAYER */
 .rotator-wrapper {
   width: 100%;
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 2.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  z-index: 50; /* Content sits on top */
 }
 
 .flipped-state {
@@ -59,30 +98,19 @@ input:-webkit-autofill:active {
 }
 
 .flipped-state .landing-header-image {
-  display: none !important;
+  /* REMOVED display: none so it can animate */
+  
+  /* THE TRANSITION: Vaporize into the void */
+  opacity: 0;                /* Fade out */
+  filter: blur(20px);        /* Turn into smoke */
+  transform: translateX(-50%) scale(0.8) translateY(100px); /* Shrink and sink down */
 }
 
 .flipped-content-fix {
   transform: rotateX(180deg); 
 }
 
-/* --- 3. SKY-ONLY LIGHTNING --- */
-.lightning-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 50%; 
-  pointer-events: none;
-  z-index: 100; 
-  mix-blend-mode: overlay;
-  background: rgba(255, 0, 0, 0.6); 
-  
-  animation: lightning-complex 7s infinite;
-  opacity: 0; 
-  animation-delay: 1.5s;
-}
-
+/* ANIMATIONS */
 @keyframes lightning-complex {
   0% { opacity: 0; }
   1.5% { opacity: 0.3; } 
@@ -103,23 +131,31 @@ input:-webkit-autofill:active {
 
 .landing-header-image {
   position: absolute;
-  top: 0%; 
+  top: 18%; 
   left: 50%;
   transform: translateX(-50%);
-  width: 1400px; 
+  width: 90vw; 
+  max-width: 800px;
   z-index: 5; 
+  pointer-events: none;
+  
+  /* NEW: Prepare for the transition */
+  transition: all 1.2s ease-in-out; 
+  opacity: 1;
+  filter: blur(0px);
 }
 
 .max-character {
   position: absolute;
-  top: 5%; 
+  top: 7%; 
   left: 50%;
   transform: translateX(-50%);
-  width: 400px; 
+  width: 400px;
   transition: transform 3s ease-in;
   z-index: 30; 
   filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
   transform: translateX(-50%) translateZ(1px);
+  pointer-events: none;
 }
 
 .floating-up {
@@ -129,16 +165,17 @@ input:-webkit-autofill:active {
 /* --- SEARCH BAR --- */
 .search-box {
   position: absolute;
-  top: 67.5%; 
+  top: 72.5%; 
   left: 50%;
   transform: translateX(-50%) translateZ(0px);
-  z-index: 20;
+  z-index: 60; 
   
-  width: 700px;
-  height: 60px; 
-  border-radius: 30px; 
+  width: 90%;
+  max-width: 750px;
+  height: 65px; 
+  border-radius: 35px; 
   
-  background: rgba(255, 255, 255, 0.12); 
+  background: rgba(255, 255, 255, 0.446); 
   backdrop-filter: blur(15px); 
   border: 1px solid rgba(255, 255, 255, 0.2); 
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); 
@@ -242,9 +279,10 @@ input::placeholder {
   scrollbar-width: none; 
 }
 
-/* HEADER - DEAD CENTER FIX */
+/* HEADER */
 .upside-down-header {
-  position: relative; /* CRITICAL FOR ABSOLUTE CENTER */
+  position: relative; 
+  z-index: 60; 
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -253,6 +291,7 @@ input::placeholder {
   background: transparent; 
   width: 100%;
   box-sizing: border-box; 
+  flex-wrap: wrap; 
 }
 
 .header-left {
@@ -260,16 +299,16 @@ input::placeholder {
   align-items: center;
   gap: 20px;
   min-width: 200px;
-  z-index: 10; 
+  z-index: 55; 
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px; 
   justify-content: flex-end;
   min-width: 200px;
-  z-index: 10; 
+  z-index: 55; 
 }
 
 .org-logo {
@@ -318,17 +357,18 @@ input::placeholder {
   text-shadow: none; 
   white-space: nowrap;
   pointer-events: none; 
+  z-index: 55;
 }
 
 /* STYLED FILTER INPUT */
 .filter-input {
   background: rgba(0, 0, 0, 0.8);
-  border: 2px solid #ff0000; 
+  border: 1px solid #ff0000; 
   color: #ff0000; 
   padding: 10px 15px;
   font-family: 'DM Serif Display', serif; 
   font-size: 1.1rem;
-  width: 200px;
+  width: 160px; 
   border-radius: 8px;
   box-shadow: 0 0 5px #8B0000;
   transition: all 0.3s;
@@ -345,12 +385,12 @@ input::placeholder {
   background: #000;
 }
 
-/* SORT DROPDOWN */
+/* SORT DROPDOWN - FIXED GLOW */
 .sort-select {
   appearance: none; 
   background: #000;
   color: #ff0000;
-  border: 2px solid #ff0000;
+  border: 2px solid #ff0000; /* Standard Red Border */
   padding: 10px 15px;
   border-radius: 8px;
   font-family: 'Creepster', cursive; 
@@ -358,10 +398,12 @@ input::placeholder {
   cursor: pointer;
   outline: none;
   text-align: center;
-  box-shadow: 0 0 5px #8B0000;
+  box-shadow: none; /* REMOVED GLOW to match Back Button */
   transition: all 0.3s;
 }
 .sort-select:hover {
+  background: #ff0000;
+  color: #000;
   box-shadow: 0 0 15px #ff0000;
 }
 
@@ -383,6 +425,8 @@ input::placeholder {
 
 /* CARDS */
 .cards-grid {
+  position: relative; 
+  z-index: 60; 
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 40px;
@@ -462,6 +506,8 @@ input::placeholder {
 
 /* ERROR PAGE */
 .error-container {
+  position: relative; 
+  z-index: 60; 
   display: flex;
   flex-direction: column;
   align-items: center;
