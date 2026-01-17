@@ -103,7 +103,7 @@ input:-webkit-autofill:active {
 
 .landing-header-image {
   position: absolute;
-  top: 5%; 
+  top: 0%; 
   left: 50%;
   transform: translateX(-50%);
   width: 1400px; 
