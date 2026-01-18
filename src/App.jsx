@@ -2,14 +2,24 @@ import { useState, useEffect, useRef, useMemo, useContext } from 'react';
 import GithubContext from './context/GithubContext'; 
 import './App.css';
 
-// IMAGES
+/**
+ * Asset Imports
+ * Pre-importing assets ensures smoother transitions during state changes.
+ */
 import graveyardImage from './assets/graveyard.jpg'; 
 import upsidedownImage from './assets/upsidedown.jpg'; 
 import maxImage from './assets/maxanitrans.png';
 import textImage from './assets/text.png';
 import demogorgonImage from './assets/demogorgon.png'; 
 
-// HOOK: DEBOUNCE
+/**
+ * Custom Hook: useDebounce
+ * Delays the processing of a value until a specified time has passed
+ * since the last change. Useful for search input optimization.
+ * * @param {any} value - The value to debounce
+ * @param {number} delay - The delay in milliseconds
+ * @returns {any} - The debounced value
+ */
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -20,35 +30,47 @@ function useDebounce(value, delay) {
 }
 
 export default function App() {
+  // --- Context & State Management ---
   const { 
     repos, loading, errorType, hasMore, query, 
     searchGithub, resetContext, setQuery, incrementPage, page
   } = useContext(GithubContext);
 
-  const [isFloating, setIsFloating] = useState(false);
-  const [isUpsideDown, setIsUpsideDown] = useState(false);
-  const [isFlipped, setIsFlipped] = useState(false);
+  // Animation State Triggers
+  const [isFloating, setIsFloating] = useState(false);    // Triggers 'Max' character ascension
+  const [isUpsideDown, setIsUpsideDown] = useState(false); // Triggers background world switch
+  const [isFlipped, setIsFlipped] = useState(false);      // Triggers the 3D rotation transition
   
+  // Filtering & Sorting State
   const [filterQuery, setFilterQuery] = useState(""); 
   const debouncedFilter = useDebounce(filterQuery, 500); 
-  
   const [sortBy, setSortBy] = useState('stars'); 
+  
+  // UI Modal State
   const [showStats, setShowStats] = useState(false);
   const [showToken, setShowToken] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
 
-  const sensorRef = useRef(null);
+  const sensorRef = useRef(null); // Reference for Infinite Scroll intersection observer
 
-  // --- PRELOAD IMAGES ---
+  /**
+   * Effect: Image Preloading
+   * Preloads critical heavy assets on mount to prevent flickering 
+   * during world transitions.
+   */
   useEffect(() => {
-    const img1 = new Image();
-    img1.src = graveyardImage;
-    const img2 = new Image();
-    img2.src = upsidedownImage;
-    const img3 = new Image();
-    img3.src = demogorgonImage;
+    const images = [graveyardImage, upsidedownImage, demogorgonImage];
+    images.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
   }, []);
 
+  /**
+   * Configuration: Language Color Map
+   * Maps programming languages to their standard GitHub color codes 
+   * for visual identification in charts and tags.
+   */
   const langColors = {
     JavaScript: '#f1e05a', TypeScript: '#2b7489', Python: '#3572A5',
     Java: '#b07219', HTML: '#e34c26', CSS: '#563d7c',
@@ -56,6 +78,11 @@ export default function App() {
     Rust: '#dea584', Shell: '#89e051', Other: '#ff0000'
   };
 
+  /**
+   * Effect: State Recovery & Scroll Positioning
+   * 1. Detects if data is loaded or an error occurred to trigger the transition state.
+   * 2. Restores scroll position if returning to the 'Upside Down' view.
+   */
   useEffect(() => {
     if (repos.length > 0 || errorType) {
       setIsFloating(true);
@@ -66,6 +93,11 @@ export default function App() {
     }
   }, [repos.length, errorType]);
 
+  /**
+   * Effect: Scroll Persistence
+   * Saves the user's vertical scroll position within the 'Upside Down' view
+   * to maintain context during navigation.
+   */
   useEffect(() => {
     const handleScroll = () => {
       if(isUpsideDown) localStorage.setItem('sg_scroll_y', window.scrollY);
@@ -74,26 +106,45 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isUpsideDown]);
 
+  /**
+   * Helper: Input Sanitizer
+   * Removes protocol and domain information from GitHub URLs, 
+   * isolating the username or organization name.
+   */
   const cleanInput = (input) => {
     return input.replace(/^(https?:\/\/)?(www\.)?github\.com\//, '').replace(/\/$/, '');
   };
 
+  /**
+   * Handler: Search Execution
+   * Orchestrates the multi-stage animation sequence:
+   * 1. Float Animation (Immediate)
+   * 2. 3D Flip (1.2s delay)
+   * 3. World Switch & API Call (2.5s delay)
+   */
   const handleSearch = () => {
     if(!query) return;
     const cleaned = cleanInput(query);
     
     setIsFloating(true);
-    // MIDDLE GROUND SPEED: Flip starts at 1.2s
+    
+    // Transition Phase 1: Rotate View
     setTimeout(() => {
       setIsFlipped(true); 
     }, 1200);
-    // MIDDLE GROUND SPEED: World changes at 2.5s
+
+    // Transition Phase 2: Switch World & Fetch Data
     setTimeout(() => {
       setIsUpsideDown(true);
       searchGithub(cleaned, 1); 
     }, 2500); 
   };
 
+  /**
+   * Handler: Reset Application
+   * Reverts all animation states and clears context data to return 
+   * to the landing page.
+   */
   const handleReset = () => {
     setIsFlipped(false);
     setTimeout(() => {
@@ -105,6 +156,11 @@ export default function App() {
     }, 500); 
   };
 
+  /**
+   * Memoization: Processed Repositories
+   * Handles client-side filtering (by name) and sorting (by stars, forks, or date)
+   * of the fetched repository list.
+   */
   const processedRepos = useMemo(() => {
     let result = [...repos];
     if (debouncedFilter) {
@@ -121,6 +177,11 @@ export default function App() {
     return result;
   }, [repos, debouncedFilter, sortBy]);
 
+  /**
+   * Memoization: Language Statistics
+   * Aggregates language usage data across all fetched repositories
+   * to generate statistics for the chart visualization.
+   */
   const languageStats = useMemo(() => {
     const stats = {};
     let total = 0;
@@ -136,6 +197,10 @@ export default function App() {
       .slice(0, 5); 
   }, [repos]);
 
+  /**
+   * Memoization: Pie Chart Gradient
+   * dynamic CSS conic-gradient string based on the aggregated language statistics.
+   */
   const pieChartGradient = useMemo(() => {
     if (languageStats.length === 0) return 'conic-gradient(#333 0% 100%)';
     let gradientString = 'conic-gradient(';
@@ -153,6 +218,11 @@ export default function App() {
     return gradientString;
   }, [languageStats]);
 
+  /**
+   * Effect: Infinite Scroll Observer
+   * Monitors the bottom sensor element. When it enters the viewport,
+   * triggers the next page of results if more data is available.
+   */
   useEffect(() => {
     if (!isUpsideDown || errorType) return;
     const observer = new IntersectionObserver(entries => {
@@ -164,12 +234,14 @@ export default function App() {
     return () => observer.disconnect();
   }, [isUpsideDown, hasMore, loading, errorType]);
 
+  // Effect: Fetch Next Page
   useEffect(() => {
     if (page > 1) {
        searchGithub(cleanInput(query), page);
     }
   }, [page]);
 
+  // Utilities
   const orgLogo = repos.length > 0 ? repos[0].owner.avatar_url : null;
   const saveToken = () => {
     if(tokenInput) localStorage.setItem('stranger_git_token', tokenInput);
@@ -178,6 +250,7 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Background Layer with Filter Transition */}
       <div 
         className="bg-layer"
         style={{ 
@@ -186,12 +259,13 @@ export default function App() {
         }}
       ></div>
 
+      {/* Atmospheric Effects */}
       {isUpsideDown && !errorType && <div className="lightning-overlay"></div>}
       {isUpsideDown && <div className="fog-layer"></div>}
 
       <div className={`rotator-wrapper ${isFlipped ? 'flipped-state' : ''}`}>
 
-        {/* --- NORMAL WORLD --- */}
+        {/* --- VIEW: LANDING PAGE (NORMAL WORLD) --- */}
         {!isUpsideDown && (
           <>
             <img src={textImage} alt="Stranger Git" className="landing-header-image" />
@@ -218,13 +292,13 @@ export default function App() {
           </>
         )}
 
-        {/* --- UPSIDE DOWN WORLD --- */}
+        {/* --- VIEW: RESULTS (UPSIDE DOWN WORLD) --- */}
         {isUpsideDown && (
           <div className="results-container flipped-content-fix">
              
-            {/* --- HEADER --- */}
+            {/* Header Section: Navigation & Filters */}
             <div className="upside-down-header-new">
-              <button className="back-icon-btn" onClick={handleReset} title="Go Back">
+              <button className="back-icon-btn" onClick={handleReset} title="Return to Reality">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff0000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 14L4 9l5-5"/>
                   <path d="M4 9h10c3 0 7 1.5 7 8"/>
@@ -232,7 +306,7 @@ export default function App() {
               </button>
                
               <div className="header-center-group">
-                {orgLogo && !errorType && <img src={orgLogo} alt="Logo" className="header-circular-logo" />}
+                {orgLogo && !errorType && <img src={orgLogo} alt="Avatar" className="header-circular-logo" />}
                 
                 {!errorType && (
                   <div className="header-search-wrapper">
@@ -256,7 +330,7 @@ export default function App() {
                      className="stats-icon-btn" 
                      onClick={() => setShowStats(true)}
                      style={{ background: pieChartGradient }}
-                     title="View Language Stats"
+                     title="View Language Analytics"
                    ></button>
                  )}
                   {!errorType && (
@@ -271,7 +345,7 @@ export default function App() {
               </div>
             </div>
 
-             {/* --- ERROR CONTAINER (THE ABYSS) --- */}
+             {/* --- ERROR STATE: THE ABYSS (404/403) --- */}
              {errorType && (
                <div className="error-container">
                  <img src={demogorgonImage} className="demogorgon-error" alt="The Demogorgon" />
@@ -290,10 +364,10 @@ export default function App() {
                </div>
              )}
 
-             {/* --- MAIN CONTENT & EMPTY STATE HANDLING --- */}
+             {/* --- DATA DISPLAY --- */}
              {!errorType && (
                <>
-                 {/* CASE: NO REPOS FOUND (The "Limbo" State Fix) */}
+                 {/* EMPTY STATE: THE VOID (User exists, but no repositories) */}
                  {!loading && repos.length === 0 ? (
                     <div className="error-container">
                         <h2 className="error-title">THE VOID IS EMPTY</h2>
@@ -303,7 +377,7 @@ export default function App() {
                         <button className="escape-btn" onClick={handleReset}>RETURN HOME</button>
                     </div>
                  ) : (
-                    /* CASE: REPOS FOUND (Normal Grid) */
+                    /* SUCCESS STATE: REPOSITORY GRID */
                     <div className="cards-grid">
                         {processedRepos.map((repo, index) => (
                             <div 
@@ -321,7 +395,7 @@ export default function App() {
                             </div>
                             </div>
                         ))}
-                        {/* Loading Skeletons */}
+                        {/* Skeleton Loading State */}
                         {loading && (
                             <>
                             <div className="skeleton-card"></div>
@@ -343,7 +417,7 @@ export default function App() {
         )}
       </div> 
 
-      {/* --- MODALS --- */}
+      {/* --- MODAL: ANALYTICS --- */}
       {showStats && (
         <div className="modal-overlay" onClick={() => setShowStats(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -362,6 +436,7 @@ export default function App() {
         </div>
       )}
 
+      {/* --- MODAL: API TOKEN INPUT --- */}
       {showToken && (
         <div className="modal-overlay" onClick={() => setShowToken(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>

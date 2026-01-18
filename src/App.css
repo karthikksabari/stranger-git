@@ -1,8 +1,9 @@
-/* IMPORTS */
+/* --- EXTERNAL FONTS --- */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Creepster&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
+/* --- GLOBAL RESETS --- */
 body {
   margin: 0;
   overflow: hidden; 
@@ -10,7 +11,7 @@ body {
   font-family: 'DM Serif Display', serif;
 }
 
-/* --- FIX: KILL THE UGLY YELLOW AUTOFILL BOX --- */
+/* Fix: Override browser default autocomplete styles */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
@@ -20,16 +21,16 @@ input:-webkit-autofill:active {
     box-shadow: inset 0 0 20px 20px rgba(255, 255, 255, 0) !important; 
 }
 
-/* --- 1. CONTAINER & BACKGROUND --- */
+/* --- MAIN APPLICATION CONTAINER --- */
 .app-container {
   width: 100vw;
   height: 100vh;
   position: relative;
-  perspective: 1500px; 
+  perspective: 1500px; /* Essential for 3D rotation depth */
   overflow: hidden;
 }
 
-/* LAYER 1: BACKGROUND - REVERTED TO STANDARD */
+/* --- LAYER 1: BACKGROUND SYSTEM --- */
 .bg-layer {
   position: absolute;
   top: 0;
@@ -37,20 +38,14 @@ input:-webkit-autofill:active {
   width: 100%;
   height: 100%;
   background-size: cover;
-  
-  /* REVERTED: Back to the classic center alignment */
-  background-position: center;
-  
+  background-position: center; /* Standard alignment for optimal framing */
   transition: background-image 0.5s ease-in-out;
   z-index: -1; 
-  
-  /* REVERTED: Standard scale, no zoom hacks */
   transform: scale(1); 
-  
   filter: contrast(1.35) saturate(1.8) brightness(0.9);
 }
 
-/* LAYER 2: LIGHTNING */
+/* --- LAYER 2: ATMOSPHERIC EFFECTS --- */
 .lightning-overlay {
   position: fixed;
   top: 0;
@@ -66,7 +61,6 @@ input:-webkit-autofill:active {
   animation-delay: 1.5s;
 }
 
-/* LAYER 3: FOG */
 .fog-layer {
   position: fixed; 
   top: 0;
@@ -78,25 +72,24 @@ input:-webkit-autofill:active {
   pointer-events: none; 
 }
 
-/* LAYER 4: CONTENT */
+/* --- LAYER 3: 3D ROTATION WRAPPER --- */
 .rotator-wrapper {
   width: 100%;
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
-  
-  /* MIDDLE GROUND SPEED: 1.8s (Balanced) */
+  /* Balanced Transition Timing for Flip Effect */
   transition: transform 1.8s cubic-bezier(0.4, 0.0, 0.2, 1);
-  
   z-index: 50; 
 }
 
+/* 3D State Classes */
 .flipped-state {
   transform: rotateX(180deg); 
 }
 
 .flipped-state .max-character {
-  display: none !important;
+  display: none !important; /* Hide character during flip to prevent visual glitching */
 }
 
 .flipped-state .landing-header-image {
@@ -106,9 +99,10 @@ input:-webkit-autofill:active {
 }
 
 .flipped-content-fix {
-  transform: rotateX(180deg); 
+  transform: rotateX(180deg); /* Corrects content orientation after world flip */
 }
 
+/* Lightning Animation Keyframes */
 @keyframes lightning-complex {
   0% { opacity: 0; }
   1.5% { opacity: 0.3; } 
@@ -125,22 +119,18 @@ input:-webkit-autofill:active {
   14.5%, 100% { opacity: 0; }
 }
 
-/* --- 4. LANDING PAGE ELEMENTS --- */
+/* --- LANDING PAGE ELEMENTS --- */
 .landing-header-image {
   position: absolute;
-  top: 18%; /* Reverted to classic position */
+  top: 18%; 
   left: 50%;
   transform: translateX(-50%);
   width: 90vw; 
   max-width: 800px;
   z-index: 5; 
   pointer-events: none;
-  
-  /* MIDDLE GROUND SPEED: 0.8s */
   transition: all 0.8s ease-in-out; 
-  
   opacity: 1;
-  filter: blur(0px);
 }
 
 .max-character {
@@ -149,10 +139,7 @@ input:-webkit-autofill:active {
   left: 50%;
   transform: translateX(-50%);
   width: 400px; 
-  
-  /* MIDDLE GROUND SPEED: 2s */
-  transition: transform 2s ease-in;
-  
+  transition: transform 2s ease-in; /* Levitation animation timing */
   z-index: 30; 
   filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
   transform: translateX(-50%) translateZ(1px);
@@ -163,10 +150,10 @@ input:-webkit-autofill:active {
   transform: translate(-50%, -150vh) translateZ(1px); 
 }
 
-/* --- SEARCH BAR (Landing) --- */
+/* --- SEARCH BAR COMPONENT --- */
 .search-box {
   position: absolute;
-  top: 72.5%; /* Reverted to classic position */
+  top: 72.5%; 
   left: 50%;
   transform: translateX(-50%) translateZ(0px);
   z-index: 60; 
@@ -217,6 +204,7 @@ input::placeholder {
   font-weight: 400;
 }
 
+/* Icon Buttons */
 .icon-button {
   background: none;
   border: none;
@@ -264,7 +252,7 @@ input::placeholder {
   transition: opacity 0.5s;
 }
 
-/* --- 5. UPSIDE DOWN WORLD MAIN CONTAINER --- */
+/* --- RESULTS VIEW CONTAINER --- */
 .results-container {
   position: absolute;
   top: 0;
@@ -276,7 +264,7 @@ input::placeholder {
   scrollbar-width: none; 
 }
 
-/* --- HEADER --- */
+/* --- HEADER NAVIGATION --- */
 .upside-down-header-new {
   position: relative; 
   width: 100%;
@@ -290,7 +278,6 @@ input::placeholder {
   margin-bottom: 20px; 
 }
 
-/* 1. LEFT: Back Icon */
 .back-icon-btn {
   background: none;
   border: none;
@@ -307,12 +294,11 @@ input::placeholder {
     filter: drop-shadow(0 0 5px #ff0000);
 }
 
-/* 2. CENTER GROUP */
+/* Center Group: Logo & Search */
 .header-center-group {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    
     display: flex;
     align-items: center;
     justify-content: center;
@@ -327,7 +313,6 @@ input::placeholder {
   object-fit: cover; 
 }
 
-/* SEARCH */
 .header-search-wrapper {
     display: flex;
     align-items: center;
@@ -368,7 +353,7 @@ input::placeholder {
     color: rgba(255, 255, 255, 0.6);
 }
 
-/* 3. RIGHT GROUP */
+/* Right Tools: Stats & Sort */
 .header-right-tools-container {
     display: flex;
     align-items: center;
@@ -380,7 +365,6 @@ input::placeholder {
     margin-left: auto; 
 }
 
-/* PIE CHART */
 .stats-icon-btn {
     width: 42px; 
     height: 42px;
@@ -396,7 +380,6 @@ input::placeholder {
     border-color: #ff0000;
 }
 
-/* SORT BUTTON */
 .sort-select-rounded {
   appearance: none; 
   background: rgba(50, 0, 0, 0.7);
@@ -422,7 +405,7 @@ input::placeholder {
   transform: scale(1.05);
 }
 
-/* --- CARDS GRID --- */
+/* --- REPOSITORY GRID SYSTEM --- */
 .cards-grid {
   position: relative; 
   z-index: 60; 
@@ -481,7 +464,7 @@ input::placeholder {
   font-size: 0.85rem;
 }
 
-/* SKELETON LOADER */
+/* Loading Skeletons */
 .skeleton-card {
   height: 200px;
   background: rgba(20, 0, 0, 0.5);
@@ -503,7 +486,6 @@ input::placeholder {
   100% { transform: translateX(100%); }
 }
 
-/* SENSOR */
 .loading-sensor {
   width: 100%;
   height: 100px;
@@ -512,7 +494,7 @@ input::placeholder {
   align-items: center; 
 }
 
-/* --- ERROR PAGE & MASSIVE DEMOGORGON --- */
+/* --- ERROR & EMPTY STATES --- */
 .error-container {
   position: relative; 
   width: 100%;
@@ -588,7 +570,7 @@ input::placeholder {
   box-shadow: 0 0 30px #ff0000;
 }
 
-/* MODAL STYLES */
+/* --- MODAL WINDOWS --- */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -655,14 +637,16 @@ input::placeholder {
   color: #fff;
   font-family: 'DM Sans', sans-serif;
 }
-/* --- MOBILE BLOCKER (FINAL STYLED VERSION) --- */
+
+/* --- MOBILE RESPONSIVE BLOCKER --- */
+/* Restricts usage on small screens to ensure 3D experience integrity */
 @media screen and (max-width: 1024px) {
-  /* 1. Hide the heavy 3D app */
+  /* Hide the desktop application */
   .app-container {
     display: none !important;
   }
 
-  /* 2. Set up the black screen */
+  /* Configure the 'Access Denied' screen */
   body {
     background-color: #000;
     margin: 0;
@@ -675,7 +659,7 @@ input::placeholder {
     overflow: hidden;
   }
 
-  /* 3. The Stranger Git Logo (Image) */
+  /* Stranger Git Logo Presentation */
   body::before {
     content: "";
     background-image: url('./assets/text.png'); 
@@ -683,30 +667,21 @@ input::placeholder {
     background-repeat: no-repeat;
     background-position: center bottom;
     width: 90%;
-    max-width: 450px; /* Slightly bigger logo */
+    max-width: 450px; 
     height: 140px; 
-    
-    /* MOVED UP: This lifts the logo significantly above the center */
     transform: translateY(-60px); 
     margin-bottom: 10px;
     opacity: 1;
   }
 
-  /* 4. The Message (Matches Logo Style) */
+  /* User Prompt */
   body::after {
     content: "Are you trying to enter the Upside Down on a mobile? \A \A No way. \A \A Go grab your PC.";
     white-space: pre-wrap;
-    
-    /* COLOR: Stranger Things Red */
     color: #ff3535; 
-    text-shadow: 0 0 15px rgba(200, 0, 0, 0.4); /* Subtle red glow */
-
-    /* FONT: Matching the serif style of the logo */
+    text-shadow: 0 0 15px rgba(200, 0, 0, 0.4); 
     font-family: 'DM Serif Display', serif; 
-    
-    /* SIZE: Increased as requested */
     font-size: 1.5rem; 
-    
     letter-spacing: 1px;
     text-align: center;
     padding: 0 30px;
