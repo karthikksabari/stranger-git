@@ -655,7 +655,7 @@ input::placeholder {
   color: #fff;
   font-family: 'DM Sans', sans-serif;
 }
-/* --- MOBILE BLOCKER (FINAL VERSION) --- */
+/* --- MOBILE BLOCKER (FINAL STYLED VERSION) --- */
 @media screen and (max-width: 1024px) {
   /* 1. Hide the heavy 3D app */
   .app-container {
@@ -678,28 +678,38 @@ input::placeholder {
   /* 3. The Stranger Git Logo (Image) */
   body::before {
     content: "";
-    /* This pulls the image from your assets folder */
     background-image: url('./assets/text.png'); 
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center bottom;
     width: 90%;
-    max-width: 400px;
-    height: 120px; 
-    margin-bottom: 30px;
-    opacity: 0.9;
+    max-width: 450px; /* Slightly bigger logo */
+    height: 140px; 
+    
+    /* MOVED UP: This lifts the logo significantly above the center */
+    transform: translateY(-60px); 
+    margin-bottom: 10px;
+    opacity: 1;
   }
 
-  /* 4. The Message (Clean & Funny) */
+  /* 4. The Message (Matches Logo Style) */
   body::after {
-    content: "Are you trying to enter the Upside Down on a mobile? \A \A No way. \A \A Go grab your PC/Mac and try again.";
+    content: "Are you trying to enter the Upside Down on a mobile? \A \A No way. \A \A Go grab your PC.";
     white-space: pre-wrap;
-    color: #e0e0e0; /* Clean white/grey text */
-    font-family: 'DM Sans', sans-serif; /* Normal, readable font */
-    font-size: 1.1rem;
-    font-weight: 500;
+    
+    /* COLOR: Stranger Things Red */
+    color: #ff3535; 
+    text-shadow: 0 0 15px rgba(200, 0, 0, 0.4); /* Subtle red glow */
+
+    /* FONT: Matching the serif style of the logo */
+    font-family: 'DM Serif Display', serif; 
+    
+    /* SIZE: Increased as requested */
+    font-size: 1.5rem; 
+    
+    letter-spacing: 1px;
     text-align: center;
-    padding: 0 40px;
-    line-height: 1.6;
+    padding: 0 30px;
+    line-height: 1.5;
   }
 }
